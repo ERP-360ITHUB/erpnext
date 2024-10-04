@@ -135,6 +135,49 @@ class Customer(TransactionBase):
 		"""If customer created from Lead, update customer id in quotations, opportunities"""
 		self.update_lead_status()
 
+
+
+
+# mohan script for create customer from user
+	def before_save(self):
+		if self.custom_create_user == 1:
+			# Check if the user already exists
+			user_exists = frappe.db.exists("User", {"email": self.custom_customer_mail_id})
+
+			if not user_exists:
+				# Create a new user
+				user = frappe.get_doc({
+					"doctype": "User",
+					"email": self.custom_customer_mail_id,
+					# "mobile_no": self.customer_mobile_no,
+					"role_profile_name": "Customer",
+					"send_welcome_email": 0,
+					"first_name": self.customer_name,
+					"new_password": self.custom_customer_mobile_no,
+					"module_profile": "no module",
+					# Add other user details as needed
+				})
+				user.insert()
+				
+				# Capture the user ID and update the field
+				self.custom_user_id = user.name
+
+				self.custom_create_user = 0
+				
+				frappe.msgprint(f"User {user.name} created successfully.", alert=True)
+			else:
+				frappe.msgprint(f"User with email {self.custom_customer_mail_id} already exists.", alert=True)
+
+
+
+###############################################################################################################
+
+
+
+
+
+
+
 	def validate(self):
 		self.flags.is_new_doc = self.is_new()
 		self.flags.old_lead = self.lead_name

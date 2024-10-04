@@ -26,9 +26,8 @@ class Lead(SellingController, CRMNote):
 	from typing import TYPE_CHECKING
 
 	if TYPE_CHECKING:
-		from frappe.types import DF
-
 		from erpnext.crm.doctype.crm_note.crm_note import CRMNote
+		from frappe.types import DF
 
 		annual_revenue: DF.Currency
 		blog_subscriber: DF.Check
@@ -63,17 +62,7 @@ class Lead(SellingController, CRMNote):
 		request_type: DF.Literal["", "Product Enquiry", "Request for Information", "Suggestions", "Other"]
 		salutation: DF.Link | None
 		state: DF.Data | None
-		status: DF.Literal[
-			"Lead",
-			"Open",
-			"Replied",
-			"Opportunity",
-			"Quotation",
-			"Lost Quotation",
-			"Interested",
-			"Converted",
-			"Do Not Contact",
-		]
+		status: DF.Literal["Lead", "Open", "Replied", "Opportunity", "Quotation", "Lost Quotation", "Interested", "Converted", "Do Not Contact", "Lead Lost"]
 		territory: DF.Link | None
 		title: DF.Data | None
 		type: DF.Literal["", "Client", "Channel Partner", "Consultant"]
@@ -347,6 +336,11 @@ def _make_customer(source_name, target_doc=None, ignore_permissions=False):
 					"company_name": "customer_name",
 					"contact_no": "phone_1",
 					"fax": "fax_1",
+					"mobile_no": "custom_customer_mobile_no",
+					"email_id": "custom_customer_mail_id",
+					"custom_gstin": "gstin",
+					"custom_address": "custom_address",
+
 				},
 				"field_no_map": ["disabled"],
 			}

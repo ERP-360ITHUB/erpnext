@@ -149,7 +149,7 @@
    "no_copy": 1,
    "oldfieldname": "status",
    "oldfieldtype": "Select",
-   "options": "Lead\nOpen\nReplied\nOpportunity\nQuotation\nLost Quotation\nInterested\nConverted\nDo Not Contact",
+   "options": "Lead\nOpen\nReplied\nOpportunity\nQuotation\nLost Quotation\nInterested\nConverted\nDo Not Contact\nLead Lost",
    "reqd": 1,
    "search_index": 1
   },
@@ -546,7 +546,9 @@
  "idx": 5,
  "image_field": "image",
  "links": [],
+
  "modified": "2024-06-28 10:29:32.676323",
+
  "modified_by": "Administrator",
  "module": "CRM",
  "name": "Lead",
