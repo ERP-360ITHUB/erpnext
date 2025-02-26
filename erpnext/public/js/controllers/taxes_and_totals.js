@@ -822,7 +822,7 @@ erpnext.taxes_and_totals = class TaxesAndTotals extends erpnext.payments {
 		}
 	}
 
-	set_total_amount_to_default_mop() {
+	async set_total_amount_to_default_mop() {
 		let grand_total = this.frm.doc.rounded_total || this.frm.doc.grand_total;
 		let base_grand_total = this.frm.doc.base_rounded_total || this.frm.doc.base_grand_total;
 
@@ -844,6 +844,45 @@ erpnext.taxes_and_totals = class TaxesAndTotals extends erpnext.payments {
 			);
 		}
 
+		/*
+		During returns, if an user select mode of payment other than
+		default mode of payment, it should retain the user selection
+		instead resetting it to default mode of payment.
+		*/
+
+		let payment_amount = 0;
+		this.frm.doc.payments.forEach(payment => {
+			payment_amount += payment.amount
+		});
+
+		if (payment_amount == total_amount_to_pay) {
+			return;
+		}
+
+		/*
+		For partial return, if the payment was made using single mode of payment
+		it should set the return to that mode of payment only.
+		*/
+
+		let return_against_mop = await frappe.call({
+			method: 'erpnext.controllers.sales_and_purchase_return.get_payment_data',
+			args: {
+				invoice: this.frm.doc.return_against
+			}
+		});
+
+		if (return_against_mop.message.length === 1) {
+			this.frm.doc.payments.forEach(payment => {
+				if (payment.mode_of_payment == return_against_mop.message[0].mode_of_payment) {
+					payment.amount = total_amount_to_pay;
+				} else {
+					payment.amount = 0;
+				}
+			});
+			this.frm.refresh_fields();
+			return;
+		}
+
 		this.frm.doc.payments.find(payment => {
 			if (payment.default) {
 				payment.amount = total_amount_to_pay;
@@ -855,10 +894,16 @@ erpnext.taxes_and_totals = class TaxesAndTotals extends erpnext.payments {
 		this.frm.refresh_fields();
 	}
 
-	set_default_payment(total_amount_to_pay, update_paid_amount) {
+	async set_default_payment(total_amount_to_pay, update_paid_amount) {
 		var me = this;
 		var payment_status = true;
 		if(this.frm.doc.is_pos && (update_paid_amount===undefined || update_paid_amount)) {
+			let r = await frappe.db.get_value("POS Profile", this.frm.doc.pos_profile, "disable_grand_total_to_default_mop");
+
+			if (r.message.disable_grand_total_to_default_mop) {
+				return;
+			}
+
 			$.each(this.frm.doc['payments'] || [], function(index, data) {
 				if(data.default && payment_status && total_amount_to_pay > 0) {
 					let base_amount, amount;

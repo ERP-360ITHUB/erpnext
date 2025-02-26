@@ -114,10 +114,10 @@ class Subscription(Document):
 
 		if self.trial_period_end and getdate(self.trial_period_end) > getdate(self.start_date):
 			_current_invoice_start = add_days(self.trial_period_end, 1)
-		elif self.trial_period_start and self.is_trialling():
-			_current_invoice_start = self.trial_period_start
 		elif date:
 			_current_invoice_start = date
+		elif self.trial_period_start and self.is_trialling():
+			_current_invoice_start = self.trial_period_start
 		else:
 			_current_invoice_start = nowdate()
 
@@ -634,9 +634,7 @@ class Subscription(Document):
 		"""
 		invoice = frappe.get_all(
 			self.invoice_document_type,
-			{
-				"subscription": self.name,
-			},
+			{"subscription": self.name, "docstatus": ("<", 2)},
 			limit=1,
 			order_by="to_date desc",
 			pluck="name",
@@ -675,6 +673,7 @@ class Subscription(Document):
 			self.invoice_document_type,
 			{
 				"subscription": self.name,
+				"docstatus": 1,
 				"status": ["!=", "Paid"],
 			},
 		)

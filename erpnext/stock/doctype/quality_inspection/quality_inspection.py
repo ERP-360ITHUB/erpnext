@@ -30,12 +30,14 @@ class QualityInspection(Document):
 		batch_no: DF.Link | None
 		bom_no: DF.Link | None
 		child_row_reference: DF.Data | None
+		company: DF.Link | None
 		description: DF.SmallText | None
 		inspected_by: DF.Link
 		inspection_type: DF.Literal["", "Incoming", "Outgoing", "In Process"]
 		item_code: DF.Link
 		item_name: DF.Data | None
 		item_serial_no: DF.Link | None
+		letter_head: DF.Link | None
 		manual_inspection: DF.Check
 		naming_series: DF.Literal["MAT-QA-.YYYY.-"]
 		quality_inspection_template: DF.Link | None
@@ -76,6 +78,13 @@ class QualityInspection(Document):
 
 		self.validate_inspection_required()
 		self.set_child_row_reference()
+		self.set_company()
+
+	def set_company(self):
+		if self.reference_type and self.reference_name:
+			company = frappe.get_cached_value(self.reference_type, self.reference_name, "company")
+			if company != self.company:
+				self.company = company
 
 	def set_child_row_reference(self):
 		if self.child_row_reference:
